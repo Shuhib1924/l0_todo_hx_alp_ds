@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <script src="https://unpkg.com/htmx.org"></script>
+        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+        <meta
+            name="htmx-config"
+            content='{"selfRequestsOnly":false}'
+        >
+        <title>Document</title>
+    </head>
+
+    <body>
+        <div
+            id="todo-list"
+            hx-get="http://127.0.0.1:8000/"
+            hx-trigger="load"
+            hx-swap="none"
+            hx-on::after-request="this.innerHTML = JSON.parse(event.detail.xhr.responseText).map(t=> `<div>${t.id}. ${t.title} - ${t.priority} - ${t.completed}</div>`).join('')"
+        >
+            loading
+        </div>
+        <hr>
+        <form
+            id="todo-form"
+            hx-post="http://127.0.0.1:8000/"
+            hx-swap="beforeend"
+            hx-target="#todo-list"
+            hx-ext="json-enc"
+            hx-on="submit: event.preventDefault()"
+        >
+            <input
+                type="text"
+                name="title"
+                placeholder="title"
+                required
+            >
+            <input
+                type="number"
+                name="priority"
+                placeholder="priority"
+                value="0"
+            >
+            <input
+                type="checkbox"
+                name="completed"
+            >
+            <button type="submit">submit</button>
+        </form>
+        <script>
+            document.addEventListener('submit', function (e) {
+                // console.log('submit');
+                e.preventDefault();
+            });
+        </script>
+    </body>
+
+</html>

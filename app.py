@@ -1,45 +1,73 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import Depends, FastAPI
-from sqlmodel import Field, Session, SQLModel, create_engine
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 
-# Define the Todo model
 class Todo(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     priority: int = Field(default=0)
     completed: bool = Field(default=False)
 
-# Create the SQLite database engine
-engine = create_engine("sqlite:///todo.db", connect_args={"check_same_thread": False})
+
+engine = create_engine("sqlite:///todo2.db", connect_args={"check_same_thread": False})
 SQLModel.metadata.create_all(engine)  # Ensures no duplicate table definitions
 
-# Initialize FastAPI app
 app = FastAPI()
 
-# Dependency: Provide a database session
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def get_session():
     with Session(engine) as session:
         yield session
 
-# Event to create tables only once during application startup
-# @app.on_event("startup")
-# def on_startup():
-#     SQLModel.metadata.create_all(engine)  # Ensures no duplicate table definitions
-
-@app.get("/")
+@app.get("/", response_model=list[Todo])
 async def get_all_todo(session: Session = Depends(get_session)):
-    return session.exec(Todo.select()).all()
+    return session.exec(select(Todo)).all()
 
-@app.post("/")
-async def create_todo(todo: Todo, session: Session = Depends(get_session)):
+def save_data(session: Session, todo: Todo):
     session.add(todo)
     session.commit()
-    session.refresh(todo)
-    return todo
+    # return todo
+    return session.exec(select(Todo)).all()
 
-# Run the FastAPI app
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True, workers=1)
+@app.post("/", response_model=list[Todo], status_code=201)
+async def create_todo(todo: Todo, session: Session = Depends(get_session)):
+    # todo.completed = True if todo.completed == 'on' else False
+    print("todo", todo.dict())
+    return save_data(session, todo)
+
+@app.delete('/{id}', response_model=list[Todo], status_code=201)
+async def delete_todo(id: int, session: Session = Depends(get_session)):
+    todo = session.exec(select(Todo).where(Todo.id == id)).one()
+    # todo = session.get(Todo, id)
+    session.delete(todo)
+    session.commit()
+    return session.exec(select(Todo)).all()
+
+app.get('/{id}', response_model=Todo)
+async def get_single_todo(id: int, session: Session = Depends(get_session)):
+    return session.exec(select(Todo).where(Todo.id == id)).one()
+
+@app.patch('/{id}', response_model=list[Todo], status_code=201)
+async def modify_todo(id: int, session: Session = Depends(get_session)):
+    todo = session.exec(select(Todo).where(Todo.id == id)).one()
+    todo.completed = not todo.completed
+    session.commit()
+    return session.exec(select(Todo)).all()
+
+@app.put('/{id}', response_model=list[Todo], status_code=201)
+async def update_todo(id: int, todo: Todo, session: Session = Depends(get_session)):
+    todo = session.exec(select(Todo).where(Todo.id == id)).one()
+    todo = Todo(**todo.dict())
+    session.commit()
+    return session.exec(select(Todo)).all()

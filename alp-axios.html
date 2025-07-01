@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <script
+            src="https://unpkg.com/alpinejs-axios"
+            defer
+        ></script>
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <title>Document</title>
+    </head>
+
+    <body x-data="{ productData: {} }">
+        <div x-init="productData = (await $get('http://127.0.0.1:8000/')).data">
+            <button @click="productData = await(await $get('http://127.0.0.1:8000/')).data">Reload</button>
+            <!-- <pre x-text="JSON.stringify(productData, null, 2)"></pre> -->
+            <template x-for="p in productData">
+                <div>
+                    <span x-text="`${p.id}. ${p.title} - ${p.priority} - ${p.completed}`"></span>
+                    <span @click="productData = await( await $delete(`http://127.0.0.1:8000/${p.id}`)).data">| D</span>
+                    <span @click="productData = await( await $put(`http://127.0.0.1:8000/${p.id}`, { 'title': p.title, 'priority': p.priority, 'completed': !p.completed })).data"></span>
+                </div>
+            </template>
+        </div>
+        <div x-data="{ title: '', priority: 0, completed: false }">
+            <input
+                type="text"
+                x-model="title"
+            >
+            <input
+                type="text"
+                x-model.number="priority"
+            >
+            <input
+                type="checkbox"
+                x-model="completed"
+            >
+            <div x-text="`title: ${title}, priority: ${priority}, completed: ${completed}`"></div>
+            <button
+                @click="productData = await (await $post('http://127.0.0.1:8000/', { 'title': title, 'priority': priority, 'completed': completed })).data"
+            >Create</button>
+            <!-- <pre x-text="JSON.stringify(productData, null, 2)"></pre> -->
+        </div>
+    </body>
+
+</html>
