@@ -1,24 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://unpkg.com/htmx.org"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
-    <meta name="htmx-config" content='{"selfRequestsOnly":false}'>
-    <title>Document</title>
-</head>
-<body>
-    <div x-data="">
-        <div>
-            <template></template>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <script src="https://unpkg.com/htmx.org"></script>
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <meta
+            name="htmx-config"
+            content='{"selfRequestsOnly":false}'
+        />
+        <title>Demo</title>
+    </head>
+
+    <body>
+        <div x-data="{
+                title: '',
+                priority: 0,
+                completed: false,
+                getPayload() {
+                    return {
+                        title: this.title,
+                        priority: this.priority,
+                        completed: this.completed
+                    };
+                }
+            }">
+            <div>
+                <div
+                    x-text="JSON.stringify(getPayload())"
+                    style="margin-bottom: 1em; font-family: monospace;"
+                ></div>
+            </div>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Task title"
+                    x-model="title"
+                    name="title"
+                    id=""
+                />
+                <input
+                    type="number"
+                    placeholder="Priority (number)"
+                    x-model="priority"
+                    name="priority"
+                    id=""
+                />
+                <input
+                    type="checkbox"
+                    x-model="completed"
+                    name="completed"
+                    id=""
+                />
+                <button
+                    hx-post="http://127.0.0.1:8000/"
+                    hx-swap="none"
+                    hx-headers='{"Content-Type": "application/json"}'
+                    hx-trigger="click"
+                    :hx-vals="JSON.stringify(getPayload())"
+                >
+                    Add Task
+                </button>
+            </div>
+
+            <script>
+                document.body.addEventListener("htmx:sendError", (event) => {
+                    console.error("htmx:sendError", event.detail);
+                });
+                document.body.addEventListener("htmx:configRequest", (event) => {
+                    console.log("htmx:configRequest", event.detail);
+                });
+                document.body.addEventListener("htmx:responseError", (event) => {
+                    console.error("htmx:responseError", event.detail);
+                });
+
+            </script>
         </div>
-        <form action="">
-            <input type="text" name="" id="">
-            <input:n></input:n>
-            <input type="checkbox" name="" id="">
-            <button type="submit"></button>
-        </form>
-    </div>
-</body>
+    </body>
+
 </html>

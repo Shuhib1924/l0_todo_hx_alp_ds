@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <title>Alpine.js + HTMX Example for DummyJSON</title>
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <script src="https://unpkg.com/htmx.org"></script>
+        <meta
+            name="htmx-config"
+            content='{"selfRequestsOnly":false}'
+        />
+    </head>
+
+    <body>
+
+        <div x-data="{
+            title: '',
+            description: '',
+            price: '',
+            list: [],
+            getPayload() {
+                return {
+                    title: this.title,
+                    description: this.description,
+                    price: this.price
+                }
+            }
+        }">
+
+            <!-- <div x-text="JSON.stringify(list, null, 2)"></div> -->
+
+            <label for="title">Title:</label>
+            <input
+                id="title"
+                type="text"
+                x-model="title"
+                required
+            >
+
+            <label for="description">Description:</label>
+            <input
+                id="description"
+                type="text"
+                x-model="description"
+                required
+            >
+
+            <label for="price">Price:</label>
+            <input
+                id="price"
+                type="number"
+                x-model="price"
+                required
+            >
+
+            <button
+                hx-post="http://127.0.0.1:8000/"
+                hx-trigger="click"
+                :hx-vals="JSON.stringify(getPayload())"
+                hx-headers='{"Content-Type" : "application/json"}'
+                hx-swap="none"
+                @htmx:after-request="list.push(JSON.parse(event.detail.xhr.responseText));"
+            >Add Product</button>
+
+            <template x-for="product in list">
+                <div x-text="`title: ${product.title}, description: ${product.description}, price: ${product.price}`">
+                </div>
+            </template>
+        </div>
+
+    </body>
+
+</html>
