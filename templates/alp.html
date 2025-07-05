@@ -17,27 +17,84 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 productData: [],
-                get_data() {
-
+                async get_data() {
+                    try {
+                        const data = await (await fetch('http://127.0.0.1:8000/')).json();
+                        this.productData = data
+                    } catch (error) {
+                        console.log(error)
+                    }
+                },
+                async create_data() {
+                    try {
+                        const data = await (await fetch('http://127.0.0.1:8000/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                title: this.title,
+                                priority: this.priority,
+                                completed: this.completed
+                            })
+                        })).json();
+                        this.productData = data
+                    } catch (error) {
+                        console.log(error)
+                    }
+                },
+                async update_data(id) {
+                    try {
+                        const data = await (await fetch(`http://127.0.0.1:8000/${id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                title: this.title,
+                                priority: this.priority,
+                                completed: this.completed
+                            })
+                        })).json();
+                        this.productData = data
+                    } catch (error) {
+                        console.log(error)
+                    }
+                },
+                async delete_data(id) {
+                    try {
+                        const data = await (await fetch(`http://127.0.0.1:8000/${id}`, {
+                            method: 'DELETE',
+                        })).json();
+                        this.productData = data
+                    } catch (error) {
+                        console.log(error)
+                    }
                 }
-
             }))
         })
     </script>
+
     <body x-data="data">
-        <div x-init="productData = (await $get('http://127.0.0.1:8000/')).data">
-            <button @click="productData = await(await $get('http://127.0.0.1:8000/')).data">Reload</button>
+        <div x-init="get_data()">
+            <!-- <div x-text="JSON.stringify(productData)"></div> -->
+            <button @click="get_data()">Reload</button>
             <template x-for="p in productData">
                 <div x-data="{editMode: false, title: p.title, priority: p.priority, completed: p.completed}">
                     <template x-if="!editMode">
                         <div x-show="!editMode">
                             <span x-text="`${p.id}. ${p.title} - ${p.priority} - ${p.completed}`"></span>
                             <span @click="editMode = true">| E</span>
-                            <span @click="productData = await( await $delete(`http://127.0.0.1:8000/${p.id}`)).data">| D</span>
+                            <span @click="delete_data(p.id)">|
+                                D</span>
                         </div>
                     </template>
                     <template x-if="editMode">
-                        <div @click.outside="editMode = false" @keyup.escape="editMode = false" @keyup.enter="productData = await( await $put(`http://127.0.0.1:8000/${p.id}`, { 'title': title, 'priority': priority, 'completed': completed })).data">
+                        <div
+                            @click.outside="editMode = false"
+                            @keyup.escape="editMode = false"
+                            @keyup.enter="update_data(p.id); editMode = false"
+                        >
                             <input
                                 type="text"
                                 x-model="title"
@@ -51,7 +108,7 @@
                                 x-model="completed"
                             >
                             <button
-                                @click="productData = await( await $put(`http://127.0.0.1:8000/${p.id}`, { 'title': title, 'priority': priority, 'completed': completed })).data; editMode = false"
+                                @click="update_data(p.id); editMode = false"
                             >Update</button>
                         </div>
                     </template>
@@ -72,9 +129,7 @@
                 x-model="completed"
             >
             <div x-text="`title: ${title}, priority: ${priority}, completed: ${completed}`"></div>
-            <button
-                @click="productData = await (await $post('http://127.0.0.1:8000/', { 'title': title, 'priority': priority, 'completed': completed })).data"
-            >Create</button>
+            <button @click="create_data()">Create</button>
         </div>
     </body>
 
