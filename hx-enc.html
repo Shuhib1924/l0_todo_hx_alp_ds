@@ -29,11 +29,15 @@
         <hr>
         <form
             id="todo-form"
-            hx-post="http://127.0.0.1:8000/"
+            hx-post="http://127.0.0.1:8000/test"
             hx-swap="beforeend"
             hx-target="#todo-list"
             hx-ext="json-enc"
-            hx-on="submit: event.preventDefault()"
+            hx-on="submit: console.log('Submit event:', event);
+                htmx:before-request: console.log('Before request:', event.detail);
+                htmx:after-request: console.log('After request:', event.detail);
+                htmx:response-error: console.log('Error:', event.detail);
+            "
         >
             <input
                 type="text"
@@ -51,13 +55,20 @@
                 type="checkbox"
                 name="completed"
             >
-            <button type="submit">submit</button>
+            <button
+                type="submit"
+                hx-on="submit: console.log('Submit event:', event);
+                htmx:before-request: console.log('Before request:', event.detail);
+                htmx:after-request: console.log('After request:', event.detail);
+                htmx:response-error: console.log('Error:', event.detail);
+            "
+            >submit</button>
         </form>
         <script>
-            document.addEventListener('submit', function (e) {
-                // console.log('submit');
-                e.preventDefault();
-            });
+            // document.addEventListener('submit', function (e) {
+            //     // console.log('submit');
+            //     e.preventDefault();
+            // });
         </script>
     </body>
 

@@ -8,6 +8,7 @@
             content="width=device-width, initial-scale=1.0"
         />
         <script src="https://unpkg.com/htmx.org"></script>
+        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
         <script
             src="https://unpkg.com/alpinejs"
             defer
@@ -24,17 +25,25 @@
                 title: '',
                 priority: 0,
                 completed: false,
+                response: [],
                 getPayload() {
-                    return {
+                    return JSON.stringify({
                         title: this.title,
                         priority: this.priority,
                         completed: this.completed
-                    };
+                    });
+                },
+                handleAfterRequest(event) {
+                    try {
+                        this.response.push(JSON.parse(event.detail.xhr.responseText));
+                    } catch (e) {
+                        console.log(e)
+                    }
                 }
             }">
             <div>
                 <div
-                    x-text="JSON.stringify(getPayload())"
+                    x-text="getPayload()"
                     style="margin-bottom: 1em; font-family: monospace;"
                 ></div>
             </div>
@@ -49,7 +58,7 @@
                 <input
                     type="number"
                     placeholder="Priority (number)"
-                    x-model="priority"
+                    x-model.number="priority"
                     name="priority"
                     id=""
                 />
@@ -60,29 +69,133 @@
                     id=""
                 />
                 <button
-                    hx-post="http://127.0.0.1:8000/"
-                    hx-swap="none"
-                    hx-headers='{"Content-Type": "application/json"}'
-                    hx-trigger="click"
-                    :hx-vals="JSON.stringify(getPayload())"
+                    hx-post="http://127.0.0.1:8000/create"
+                    hx-swap="innerHTML"
+                    hx-target="#output"
+                    hx-ext="json-enc"
+                    :hx-vals="getPayload()"
+                    @htmx:after-request.window="handleAfterRequest(event)"
                 >
                     Add Task
                 </button>
             </div>
-
-            <script>
-                document.body.addEventListener("htmx:sendError", (event) => {
-                    console.error("htmx:sendError", event.detail);
-                });
-                document.body.addEventListener("htmx:configRequest", (event) => {
-                    console.log("htmx:configRequest", event.detail);
-                });
-                document.body.addEventListener("htmx:responseError", (event) => {
-                    console.error("htmx:responseError", event.detail);
-                });
-
-            </script>
+            <div
+                id="output"
+                x-text="`output: ${JSON.stringify(response, null, 2)}`"
+                style="margin-top: 10px;"
+            ></div>
         </div>
+        <hr>
+        <div x-data="{
+                title: '',
+                priority: 0,
+                completed: false,
+                response: [],
+                getPayload() {
+                    return JSON.stringify({
+                        title: this.title,
+                        priority: this.priority,
+                        completed: this.completed
+                    });
+                },
+                handleAfterRequest(event) {
+                    try {
+                        this.response.push(JSON.parse(event.detail.xhr.responseText));
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+            }">
+            <div>
+                <div
+                    x-text="getPayload()"
+                    style="margin-bottom: 1em; font-family: monospace;"
+                ></div>
+            </div>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Task title"
+                    x-model="title"
+                    name="title"
+                    id=""
+                />
+                <input
+                    type="number"
+                    placeholder="Priority (number)"
+                    x-model.number="priority"
+                    name="priority"
+                    id=""
+                />
+                <input
+                    type="checkbox"
+                    x-model="completed"
+                    name="completed"
+                    id=""
+                />
+                <button
+                    hx-post="http://127.0.0.1:8000/create2"
+                    hx-swap="innerHTML"
+                    hx-target="#output2"
+                    hx-ext="json-enc"
+                    :hx-vals="getPayload()"
+                    @htmx:after-request.window="handleAfterRequest(event)"
+                >
+                    Add Test
+                </button>
+            </div>
+            <div
+                id="output2"
+                x-text="`output: ${JSON.stringify(response, null, 2)}`"
+                style="margin-top: 10px;"
+            ></div>
+        </div>
+
+
+        <script>
+            document.body.addEventListener("htmx:sendError", (event) => {
+                console.error("htmx:sendError", event.detail);
+            });
+            document.body.addEventListener("htmx:responseError", (event) => {
+                console.error("htmx:responseError", event.detail);
+            });
+            //     document.body.addEventListener("htmx:sendError", (event) => {
+            //         console.error("htmx:sendError", event.detail);
+            //     });
+            //     document.body.addEventListener("htmx:configRequest", (event) => {
+            //         console.log("htmx:configRequest", event.detail);
+            //     });
+            //     document.body.addEventListener("htmx:responseError", (event) => {
+            //         console.error("htmx:responseError", event.detail);
+            //     });
+            //     document.body.addEventListener("htmx:configRequest", (event) => {
+            //         const payload = {
+            //             title: "Example Title",
+            //             priority: 123,
+            //             completed: true,
+            //         };
+            //         event.detail.headers['Content-Type'] = 'application/json';
+            //         event.detail.parameters = null; // Clear default parameters
+            //         event.detail.xhr.setRequestHeader('Content-Type', 'application/json');
+            //         event.detail.xhr.send(JSON.stringify(payload));
+            //     });
+            //     document.body.addEventListener("htmx:responseError", (event) => {
+            //         console.error("HTMX Response Error: ", event.detail);
+            //     });
+            // function configureJsonRequest(event) {
+            //     // Access the HTMX request configuration
+            //     event.detail.xhr.setRequestHeader('Content-Type', 'application/json');
+            //     event.detail.parameters = {}; // Clear default params
+
+            //     // Set JSON body
+            //     const payload = JSON.parse(event.detail.elt.getAttribute('hx-vals'));
+            //     event.detail.xhr.send(JSON.stringify(payload));
+
+            //     // Prevent default HTMX processing
+            //     event.preventDefault();
+            //     return false;
+            // }
+            // </script>
     </body>
 
 </html>

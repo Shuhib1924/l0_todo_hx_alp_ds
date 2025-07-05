@@ -13,6 +13,7 @@
             defer
         ></script>
         <script src="https://unpkg.com/htmx.org"></script>
+        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
         <meta
             name="htmx-config"
             content='{"selfRequestsOnly":false}'
@@ -57,12 +58,13 @@
             <input
                 id="price"
                 type="number"
-                x-model="price"
+                x-model.number="price"
                 required
             >
 
             <button
                 hx-post="https://dummyjson.com/products/add"
+                hx-ext="json-enc"
                 hx-trigger="click"
                 :hx-vals="JSON.stringify(getPayload())"
                 hx-headers='{"Content-Type" : "application/json"}'
