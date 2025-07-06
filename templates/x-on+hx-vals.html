@@ -56,7 +56,14 @@
                         <div
                             @click.outside="editMode = false"
                             @keyup.escape.window="editMode = false"
-                            @keyup.enter="update_data(p.id); editMode = false"
+                            x-init="htmx.process($el)"
+                            hx-ext="json-enc"
+                            hx-headers='{"Content-Type" : "application/json"}'
+                            :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
+                            :hx-put="`http://127.0.0.1:8000/${p.id}`"
+                            hx-trigger="keyup[key=='Enter'] from body"
+                            hx-swap="none"
+                            @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText); editMode = false"
                         >
                             <input
                                 type="text"
@@ -70,7 +77,15 @@
                                 type="checkbox"
                                 x-model="completed"
                             >
-                            <button @click="update_data(p.id); editMode = false">Update</button>
+                            <button
+                                x-init="htmx.process($el)"
+                                hx-ext="json-enc"
+                                hx-headers='{"Content-Type" : "application/json"}'
+                                :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
+                                :hx-put="`http://127.0.0.1:8000/${p.id}`"
+                                hx-swap="none"
+                                @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText); editMode = false"
+                            >Update</button>
                         </div>
                     </template>
                 </div>
