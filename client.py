@@ -11,3 +11,7 @@ async def ax(request: Request):
 @app.get('/alp')
 async def alp(request: Request):
     return templates.TemplateResponse("alp.html", {"request": request})
+
+@app.get('/x-on+hx-vals')
+async def x_on_hx_vals(request: Request):
+    return templates.TemplateResponse("x-on+hx-vals.html", {"request": request})

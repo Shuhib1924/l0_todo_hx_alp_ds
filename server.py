@@ -44,15 +44,15 @@ async def get_all_todo(session: Session = Depends(get_session)):
 #     print(data)
 #     return data
 
-
 @app.post('/', status_code=201)
 async def create_todo(todo: Todo, session: Session = Depends(get_session)):
     session.add(todo)
     session.commit()
     return session.exec(select(Todo)).all()
 
-@app.delete('/{id}', response_model=list[Todo], status_code=201)
+@app.delete('/{id}', response_model=list[Todo], status_code=200)
 def delete_todo(id: int, session: Session = Depends(get_session)):
+    # print("id", id)
     # todo = session.get(Todo, id)
     # todo = session.exec(select(Todo).where(Todo.id == id)).one()
     # todo = session.exec(select(Todo).filter(Todo.id == id)).one_or_none()

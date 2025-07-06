@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <script src="https://unpkg.com/htmx.org"></script>
+        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+        <meta
+            name="htmx-config"
+            content='{"selfRequestsOnly":false}'
+        >
+        <title>Document</title>
+    </head>
+
+    <body>
+        <div
+            x-data="{show: false}"
+            x-init="
+                $watch('show', value => {
+                    // console.log(value)
+                    if (value){
+                        //console.log('yes')
+                        $nextTick(()=>{
+                            //console.log('new event')
+                            htmx.process(htmx.find('#btn1'))
+                        })
+                    }
+                })
+            "
+        >
+            <button @click="show = !show">toggle</button>
+            <hr>
+            <template x-if="show">
+                <div
+                    id="btn1"
+                    hx-delete="http://127.0.0.1:8000/1"
+                >btn 1</div>
+            </template>
+            <hr>
+            <div hx-delete="http://127.0.0.1:8000/2">btn 2</div>
+        </div>
+        <div x-data="{show: false}">
+            <button @click="show = !show">toggle</button>
+            <hr>
+            <template x-if="show">
+                <div
+                    hx-delete="http://127.0.0.1:8000/3"
+                    x-init="htmx.process($el)"
+                >btn 3</div>
+            </template>
+            <hr>
+            <div hx-delete="http://127.0.0.1:8000/4">btn 4</div>
+        </div>
+    </body>
+
+</html>

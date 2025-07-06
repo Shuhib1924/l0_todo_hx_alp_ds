@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <script src="https://unpkg.com/htmx.org"></script>
+        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+        <meta
+            name="htmx-config"
+            content='{"selfRequestsOnly":false}'
+        >
+        <title>Document</title>
+    </head>
+
+    <body
+        x-data="{
+        productData: [],
+        }"
+        hx-get="http://127.0.0.1:8000/"
+        hx-trigger="load"
+        hx-swap="none"
+        @htmx:after-request="productData = JSON.parse(event.detail.xhr.responseText)"
+    >
+        <div>
+            <!-- <div x-text="JSON.stringify(productData, null, 2)"></div> -->
+            <button
+                hx-get="http://127.0.0.1:8000/"
+                hx-trigger="click"
+                hx-swap="none"
+                @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText)"
+            >Reload</button>
+            <template x-for="p in productData">
+                <div x-data="{editMode: false, title: p.title, priority: p.priority, completed: p.completed}">
+                    <template x-if="!editMode">
+                        <div x-show="!editMode">
+                            <span x-text="`${p.id}. ${p.title} - ${p.priority} - ${p.completed}`"></span>
+                            <span @click="editMode = true">| E</span>
+                            <span
+                                x-init="htmx.process($el)"
+                                :hx-delete="`http://127.0.0.1:8000/${p.id}`"
+                                hx-swap="none"
+                                @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText)"
+                            >|
+                                D</span>
+                        </div>
+                    </template>
+                    <template x-if="editMode">
+                        <div
+                            @click.outside="editMode = false"
+                            @keyup.escape.window="editMode = false"
+                            @keyup.enter="update_data(p.id); editMode = false"
+                        >
+                            <input
+                                type="text"
+                                x-model="title"
+                            >
+                            <input
+                                type="number"
+                                x-model.number="priority"
+                            >
+                            <input
+                                type="checkbox"
+                                x-model="completed"
+                            >
+                            <button @click="update_data(p.id); editMode = false">Update</button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+        <div x-data="{ title: '', priority: 0, completed: false }">
+            <input
+                type="text"
+                x-model="title"
+            >
+            <input
+                type="number"
+                x-model.number="priority"
+            >
+            <input
+                type="checkbox"
+                x-model="completed"
+            >
+            <div x-text="`title: ${title}, priority: ${priority}, completed: ${completed}`"></div>
+            <button
+                hx-ext="json-enc"
+                hx-post="http://127.0.0.1:8000/"
+                hx-swap="none"
+                hx-headers='{"Content-Type" : "application/json"}'
+                :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
+                @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText)"
+            >Create</button>
+        </div>
+    </body>
+
+</html>
