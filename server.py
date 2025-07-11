@@ -39,10 +39,10 @@ async def get_all_todo(session: Session = Depends(get_session)):
     # print("todos", todos)
     return todos
 
-# @app.post('/test')
-# async def post_test(data: dict):
-#     print(data)
-#     return data
+@app.post('/test')
+async def post_test(data: Dict[ Any, Any]):
+    print(data)
+    return data
 
 @app.post('/', status_code=201)
 async def create_todo(todo: Todo, session: Session = Depends(get_session)):

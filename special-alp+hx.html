@@ -153,21 +153,10 @@
 
 
         <script>
-            document.body.addEventListener("htmx:sendError", (event) => {
-                console.error("htmx:sendError", event.detail);
-            });
             document.body.addEventListener("htmx:responseError", (event) => {
                 console.error("htmx:responseError", event.detail);
             });
-            //     document.body.addEventListener("htmx:sendError", (event) => {
-            //         console.error("htmx:sendError", event.detail);
-            //     });
-            //     document.body.addEventListener("htmx:configRequest", (event) => {
-            //         console.log("htmx:configRequest", event.detail);
-            //     });
-            //     document.body.addEventListener("htmx:responseError", (event) => {
-            //         console.error("htmx:responseError", event.detail);
-            //     });
+
             //     document.body.addEventListener("htmx:configRequest", (event) => {
             //         const payload = {
             //             title: "Example Title",
@@ -179,18 +168,13 @@
             //         event.detail.xhr.setRequestHeader('Content-Type', 'application/json');
             //         event.detail.xhr.send(JSON.stringify(payload));
             //     });
-            //     document.body.addEventListener("htmx:responseError", (event) => {
-            //         console.error("HTMX Response Error: ", event.detail);
-            //     });
             // function configureJsonRequest(event) {
             //     // Access the HTMX request configuration
             //     event.detail.xhr.setRequestHeader('Content-Type', 'application/json');
             //     event.detail.parameters = {}; // Clear default params
-
             //     // Set JSON body
             //     const payload = JSON.parse(event.detail.elt.getAttribute('hx-vals'));
             //     event.detail.xhr.send(JSON.stringify(payload));
-
             //     // Prevent default HTMX processing
             //     event.preventDefault();
             //     return false;

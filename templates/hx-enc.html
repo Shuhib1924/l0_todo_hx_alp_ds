@@ -29,15 +29,13 @@
         <hr>
         <form
             id="todo-form"
-            hx-post="http://127.0.0.1:8000/test"
+            hx-post="http://127.0.0.1:8000/"
             hx-swap="beforeend"
             hx-target="#todo-list"
             hx-ext="json-enc"
-            hx-on="submit: console.log('Submit event:', event);
-                htmx:before-request: console.log('Before request:', event.detail);
-                htmx:after-request: console.log('After request:', event.detail);
-                htmx:response-error: console.log('Error:', event.detail);
-            "
+            hx-on::before-request="console.log('Before request:', event.detail)"
+            hx-on::after-request="console.log('After request:', event.detail)"
+            hx-on::response-error="console.log('Error:', event.detail)"
         >
             <input
                 type="text"
@@ -57,11 +55,6 @@
             >
             <button
                 type="submit"
-                hx-on="submit: console.log('Submit event:', event);
-                htmx:before-request: console.log('Before request:', event.detail);
-                htmx:after-request: console.log('After request:', event.detail);
-                htmx:response-error: console.log('Error:', event.detail);
-            "
             >submit</button>
         </form>
         <script>

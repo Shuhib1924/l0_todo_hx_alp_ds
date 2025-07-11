@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+        <script
+            src="https://unpkg.com/alpinejs"
+            defer
+        ></script>
+        <title>Document</title>
+    </head>
+
+    <body>
+        <div x-data="{ response: null }">
+            <button
+                @click="response = await $post('http://127.0.0.1:8000/test', { 'title': 'test', 'priority': 1, 'completed': false })"
+            >create</button>
+            <button @click="response = await $get('http://127.0.0.1:8000/')"
+            >Get Data</button>
+            <pre x-text="JSON.stringify(response, null, 2)"></pre>
+        </div>
+    </body>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.magic('get', () => {
+                return async function (url, data = {}) {
+                    const response = await (await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        redirect: 'follow'
+                    })).json();
+                    return response;
+                }
+            });
+
+            Alpine.magic('post', () => {
+                return async function (url, data = {}) {
+                    const response = await (await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        redirect: 'follow',
+                        body: JSON.stringify(data)
+                    })).json();
+                    return response;
+                }
+            });
+
+            Alpine.magic('put', () => {
+                return async function (url, data = {}) {
+                    const response = await (await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        redirect: 'follow',
+                        body: JSON.stringify(data)
+                    })).json();
+                    return response;
+                }
+            });
+
+            Alpine.magic('delete', () => {
+                return async function (url, data = {}) {
+                    const response = await (await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        redirect: 'follow',
+                        body: JSON.stringify(data)
+                    })).json();
+                    return response;
+                }
+            });
+        });
+    </script>
+
+</html>

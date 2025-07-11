@@ -12,7 +12,6 @@
             defer
         ></script>
         <script src="https://unpkg.com/htmx.org"></script>
-        <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
         <meta
             name="htmx-config"
             content='{"selfRequestsOnly":false}'
@@ -57,8 +56,8 @@
                             @click.outside="editMode = false"
                             @keyup.escape.window="editMode = false"
                             x-init="htmx.process($el)"
-                            hx-ext="json-enc"
                             hx-headers='{"Content-Type" : "application/json"}'
+                            hx-ext="json"
                             :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
                             :hx-put="`http://127.0.0.1:8000/${p.id}`"
                             hx-trigger="keyup[key=='Enter'] from body"
@@ -79,8 +78,8 @@
                             >
                             <button
                                 x-init="htmx.process($el)"
-                                hx-ext="json-enc"
-                                hx-headers='{"Content-Type" : "application/json"}'
+                                @htmx:config-request.window="$event.detail.headers['Content-Type'] = 'application/json'"
+                                hx-ext="json"
                                 :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
                                 :hx-put="`http://127.0.0.1:8000/${p.id}`"
                                 hx-swap="none"
@@ -95,25 +94,61 @@
             <input
                 type="text"
                 x-model="title"
+                placeholder="Title"
             >
             <input
                 type="number"
                 x-model.number="priority"
+                placeholder="Priority"
             >
             <input
                 type="checkbox"
                 x-model="completed"
             >
-            <div x-text="`title: ${title}, priority: ${priority}, completed: ${completed}`"></div>
+            <div x-text="`Title: ${title}, Priority: ${priority}, Completed: ${completed}`">
+            </div>
             <button
-                hx-ext="json-enc"
-                hx-post="http://127.0.0.1:8000/"
+                hx-post="http://127.0.0.1:8000/test"
+                hx-ext="json"
+                hx-vals="{
+                        'title': 'title',
+                        'priority': 'priority',
+                        'completed': 'completed'
+                    }"
                 hx-swap="none"
-                hx-headers='{"Content-Type" : "application/json"}'
-                :hx-vals="JSON.stringify({ title: title, priority: priority, completed: completed })"
-                @htmx:after-request.window="productData = JSON.parse(event.detail.xhr.responseText)"
-            >Create</button>
+            >Submit4
+            </button>
         </div>
+        <script>
+            let api
+            htmx.defineExtension('json', {
+                init: function (apiRef) {
+                    api = apiRef
+                },
+                onEvent: function (name, evt) {
+                    if (name === "htmx:configRequest") {
+                        evt.detail.headers['Content-Type'] = "application/json"
+                    }
+                },
+                encodeParameters: function (xhr, parameters, elt) {
+                    xhr.overrideMimeType('text/json')
+                    const vals = api.getExpressionVars(elt)
+                    const object = {}
+                    parameters.forEach(function (value, key) {
+                        const typedValue = Object.hasOwn(vals, key) ? vals[key] : value
+                        if (Object.hasOwn(object, key)) {
+                            if (!Array.isArray(object[key])) {
+                                object[key] = [object[key]]
+                            }
+                            object[key].push(typedValue)
+                        } else {
+                            object[key] = typedValue
+                        }
+                    })
+                    return (JSON.stringify(object))
+                }
+            })
+        </script>
     </body>
 
 </html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/alpinejs" defer></script>
+  <title>customAlp 2</title>
+</head>
+<body>
+  <div x-data="{ response: null }">
+    <button @click="response = await $api('POST', 'http://127.0.0.1:8000/test', { title: 'test', priority: 1, completed: false })">
+      Create
+    </button>
+    <button @click="response = await $api('GET', 'http://127.0.0.1:8000/')">
+      Get Data
+    </button>
+    <button @click="response = await $api('PUT', 'http://127.0.0.1:8000/1', { title: 'updated', priority: 2 })">
+      Update
+    </button>
+    <button @click="response = await $api('DELETE', 'http://127.0.0.1:8000/1')">
+      Delete
+    </button>
+    <pre x-text="JSON.stringify(response, null, 2)"></pre>
+  </div>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.magic('api', () => {
+        return async function (method, url, data = null) {
+          try {
+            const options = {
+              method,
+              headers: { 'Content-Type': 'application/json' },
+            };
+            if (data) options.body = JSON.stringify(data);
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return await response.json();
+          } catch (error) {
+            console.error('API Error:', error);
+            return { error: error.message };
+          }
+        };
+      });
+    });
+  </script>
+</body>
+</html>

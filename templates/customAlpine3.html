@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/alpinejs" defer></script>
+  <title>Document</title>
+</head>
+<body>
+  <div x-data="{ response: null }">
+    <button @click="$post('http://127.0.0.1:8000/test', { title: 'test', priority: 1, completed: false }, (data) => response = data)">
+      Create
+    </button>
+    <button @click="$get('http://127.0.0.1:8000/', (data) => response = data)">
+      Get Data
+    </button>
+    <pre x-text="JSON.stringify(response, null, 2)"></pre>
+  </div>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      // Generalized Async Function
+      const apiRequest = async (method, url, data = {}, callback) => {
+        try {
+          const options = {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: method !== 'GET' ? JSON.stringify(data) : null,
+          };
+
+          const response = await fetch(url, options);
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+          const result = await response.json();
+          if (callback) callback(result); // Use the callback to assign the response
+        } catch (error) {
+          console.error('API Error:', error);
+          if (callback) callback({ error: error.message });
+        }
+      };
+
+      // Define Magic Helpers
+      Alpine.magic('get', () => (url, callback) => {
+        apiRequest('GET', url, {}, callback);
+      });
+
+      Alpine.magic('post', () => (url, data, callback) => {
+        apiRequest('POST', url, data, callback);
+      });
+
+      Alpine.magic('put', () => (url, data, callback) => {
+        apiRequest('PUT', url, data, callback);
+      });
+
+      Alpine.magic('delete', () => (url, data, callback) => {
+        apiRequest('DELETE', url, data, callback);
+      });
+    });
+  </script>
+</body>
+</html>
